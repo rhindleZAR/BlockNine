@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlockNine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: #ffffff;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* --- Hero --- */
+  .hero {
+    display: flex;
+    align-items: baseline;
+    font-size: clamp(2rem, 5.8vw, 5.2rem);
+    line-height: 1.2;
+    color: #000000;
+    letter-spacing: -0.01em;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  /* --- Brand type-on --- */
+  .brand {
+    position: relative;
+    display: inline-block;
+  }
+
+  .brand-letter {
+    display: inline-block;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .brand-letter.revealed {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* --- Cursor --- */
+  .cursor {
+    display: inline-block;
+    width: 0.055em;
+    height: 0.82em;
+    background: #000;
+    margin-left: 0.02em;
+    vertical-align: baseline;
+    position: relative;
+    top: 0.08em;
+    animation: blink 530ms steps(1) infinite;
+  }
+
+  .cursor.hidden {
+    opacity: 0;
+    animation: none;
+    transition: opacity 0.5s ease;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* --- Em dash: fade in + horizontal extend --- */
+  .dash {
+    display: inline-block;
+    opacity: 0;
+    margin: 0 0.12em;
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .dash.extend {
+    animation: dashExtend 0.85s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  }
+
+  @keyframes dashExtend {
+    0% {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    30% {
+      opacity: 0.6;
+      transform: scaleX(0.3);
+    }
+    100% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+  }
+
+  /* --- Carousel --- */
+  .carousel-wrapper {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    vertical-align: baseline;
+    height: 1.25em;
+  }
+
+  .carousel-word {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: #4a4a4a;
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+
+  .carousel-sizer {
+    display: block;
+    visibility: hidden;
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* --- Attribution --- */
+  .attribution {
+    position: fixed;
+    bottom: clamp(1.5rem, 3vh, 2.5rem);
+    right: clamp(1.5rem, 3vw, 3rem);
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+    color: #999999;
+    letter-spacing: 0.01em;
+    user-select: none;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+
+  .attribution.visible {
+    opacity: 1;
+  }
+
+  /* --- Reduced motion --- */
+  @media (prefers-reduced-motion: reduce) {
+    .brand-letter {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    .cursor {
+      display: none !important;
+    }
+    .dash {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+    .carousel-word {
+      transform: none !important;
+      transition: none !important;
+    }
+    .carousel-word.active {
+      opacity: 1 !important;
+    }
+    .attribution {
+      opacity: 1 !important;
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero" aria-label="BlockNine — Strategy, Design, Creative, Ventures">
+  <span class="brand" id="brand"></span><span class="cursor" id="cursor"></span><span class="dash" id="dash">&mdash;</span><span class="carousel-wrapper" id="carousel">
+    <span class="carousel-sizer" id="sizer"></span>
+  </span>
+</div>
+
+<div class="attribution" id="attribution">Ross Hindle</div>
+
+<script>
+(function () {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const brandText = 'BlockNine';
+  const words = ['Strategy', 'Design', 'Creative', 'Ventures'];
+  const brandEl = document.getElementById('brand');
+  const cursorEl = document.getElementById('cursor');
+  const dashEl = document.getElementById('dash');
+  const carouselEl = document.getElementById('carousel');
+  const sizerEl = document.getElementById('sizer');
+  const attrEl = document.getElementById('attribution');
+
+  const longest = words.reduce((a, b) => a.length > b.length ? a : b);
+  sizerEl.textContent = longest;
+
+  const wordEls = words.map((w) => {
+    const span = document.createElement('span');
+    span.className = 'carousel-word';
+    span.textContent = w;
+    carouselEl.appendChild(span);
+    return span;
+  });
+
+  const letterEls = [];
+  for (const ch of brandText) {
+    const span = document.createElement('span');
+    span.className = 'brand-letter';
+    span.textContent = ch;
+    brandEl.appendChild(span);
+    letterEls.push(span);
+  }
+
+  if (prefersReducedMotion) {
+    letterEls.forEach(el => el.classList.add('revealed'));
+    dashEl.style.opacity = '1';
+    dashEl.style.transform = 'none';
+    wordEls[0].classList.add('active');
+    wordEls[0].style.opacity = '1';
+    wordEls[0].style.transform = 'translateY(0)';
+    attrEl.classList.add('visible');
+    return;
+  }
+
+  let letterIndex = 0;
+  const typeSpeed = 160;
+
+  function typeOn() {
+    if (letterIndex < letterEls.length) {
+      letterEls[letterIndex].classList.add('revealed');
+      letterIndex++;
+      setTimeout(typeOn, typeSpeed);
+    } else {
+      setTimeout(() => {
+        cursorEl.classList.add('hidden');
+        setTimeout(extendDash, 450);
+      }, 600);
+    }
+  }
+
+  function extendDash() {
+    dashEl.classList.add('extend');
+    dashEl.addEventListener('animationend', () => {
+      // Show attribution softly as carousel begins
+      attrEl.classList.add('visible');
+      setTimeout(startCarousel, 300);
+    }, { once: true });
+  }
+
+  let currentWord = 0;
+
+  function startCarousel() {
+    showWord(0);
+    setInterval(nextWord, 6000);
+  }
+
+  function showWord(index) {
+    const el = wordEls[index];
+    el.style.transition = 'none';
+    el.className = 'carousel-word';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(0.45em)';
+    void el.offsetWidth;
+    el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+    el.classList.add('active');
+  }
+
+  function hideWord(index, cb) {
+    const el = wordEls[index];
+    el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-0.45em)';
+    setTimeout(() => {
+      el.className = 'carousel-word';
+      if (cb) cb();
+    }, 560);
+  }
+
+  function nextWord() {
+    const prev = currentWord;
+    currentWord = (currentWord + 1) % words.length;
+    hideWord(prev, () => showWord(currentWord));
+  }
+
+  setTimeout(typeOn, 900);
+})();
+</script>
+</body>
+</html>
