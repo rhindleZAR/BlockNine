@@ -201,7 +201,7 @@
   }
 
   let letterIndex = 0;
-  const typeSpeed = 160;
+  const typeSpeed = 220;
   positionCursor();
 
   function typeOn() {
@@ -212,7 +212,7 @@
       setTimeout(typeOn, typeSpeed);
     } else {
       cursorEl.classList.add('steady');
-      setTimeout(startSwing, 500);
+      setTimeout(startSwing, 800);
     }
   }
 
@@ -286,7 +286,7 @@
     }
 
     // STEP A: The swing
-    const swingDuration = 2000;
+    const swingDuration = 2800;
     const swingStart = performance.now();
 
     function animateSwing(now) {
@@ -330,13 +330,13 @@
       } else {
         // Hold position
         drawBarCenter(landCX, landCY, barLen, 0, barThick);
-        setTimeout(startGlide, 400);
+        setTimeout(startGlide, 600);
       }
     }
 
     // STEP B: Glide to dash position
     function startGlide() {
-      const glideDuration = 800;
+      const glideDuration = 1200;
       const glideStart = performance.now();
 
       function animateGlide(now) {
@@ -383,7 +383,7 @@
     el.style.transform = 'translateY(0.45em)';
     void el.offsetWidth;
     const isFirst = (index === 0 && el.dataset.shown !== 'true');
-    const fadeIn = isFirst ? '1.4s' : '0.7s';
+    const fadeIn = isFirst ? '2.0s' : '1.0s';
     el.dataset.shown = 'true';
     el.style.transition = `opacity ${fadeIn} ease, transform ${fadeIn} ease`;
     el.style.opacity = '1';
@@ -393,13 +393,13 @@
 
   function hideWord(index, cb) {
     const el = wordEls[index];
-    el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
     el.style.opacity = '0';
     el.style.transform = 'translateY(-0.45em)';
     setTimeout(() => {
       el.className = 'carousel-word';
       if (cb) cb();
-    }, 560);
+    }, 820);
   }
 
   function nextWord() {
@@ -408,7 +408,7 @@
     hideWord(prev, () => showWord(currentWord));
   }
 
-  setTimeout(typeOn, 900);
+  setTimeout(typeOn, 1400);
 })();
 </script>
 </body>
