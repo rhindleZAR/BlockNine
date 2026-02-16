@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlockNine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; width: 100%; overflow: hidden; }
+
+  body {
+    background: #fff;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .hero {
+    display: flex;
+    align-items: baseline;
+    font-size: clamp(2rem, 5.8vw, 5.2rem);
+    line-height: 1.2;
+    color: #000;
+    letter-spacing: -0.01em;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .brand { position: relative; display: inline-block; }
+  .brand-letter { display: inline-block; opacity: 0; visibility: hidden; }
+  .brand-letter.revealed { opacity: 1; visibility: visible; }
+
+  .cursor-typing {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0.055em;
+    height: 0.82em;
+    background: #000;
+    animation: blink 530ms steps(1) infinite;
+    pointer-events: none;
+  }
+  .cursor-typing.steady { animation: none; opacity: 1; }
+  .cursor-typing.gone { display: none; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  #cursorSwing {
+    position: fixed;
+    background: #000;
+    pointer-events: none;
+    z-index: 100;
+    display: none;
+  }
+
+  .dash {
+    display: inline-block;
+    margin: 0 0.12em;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .dash.visible { opacity: 1; }
+
+  .carousel-wrapper {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    vertical-align: baseline;
+    height: 1.25em;
+  }
+  .carousel-word {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    color: #4a4a4a;
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+  .carousel-sizer {
+    display: block;
+    visibility: hidden;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .attribution {
+    position: fixed;
+    bottom: clamp(1.5rem, 3vh, 2.5rem);
+    right: clamp(1.5rem, 3vw, 3rem);
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+    color: #999;
+    letter-spacing: 0.01em;
+    user-select: none;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .attribution.visible { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-letter { opacity: 1 !important; visibility: visible !important; }
+    .cursor-typing { display: none !important; }
+    #cursorSwing { display: none !important; }
+    .dash { opacity: 1 !important; }
+    .carousel-word { transform: none !important; transition: none !important; }
+    .carousel-word.active { opacity: 1 !important; }
+    .attribution { opacity: 1 !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero" aria-label="BlockNine — Strategy, Design, Creative, Ventures">
+  <span class="brand" id="brand"></span><span class="dash" id="dash">&mdash;</span><span class="carousel-wrapper" id="carousel">
+    <span class="carousel-sizer" id="sizer"></span>
+  </span>
+</div>
+
+<div id="cursorSwing"></div>
+<div class="attribution" id="attribution">Ross Hindle</div>
+
+<script>
+(function () {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const brandText = 'BlockNine';
+  const words = ['Strategy', 'Design', 'Creative', 'Ventures'];
+  const brandEl = document.getElementById('brand');
+  const dashEl = document.getElementById('dash');
+  const carouselEl = document.getElementById('carousel');
+  const sizerEl = document.getElementById('sizer');
+  const attrEl = document.getElementById('attribution');
+  const swingEl = document.getElementById('cursorSwing');
+
+  const longest = words.reduce((a, b) => a.length > b.length ? a : b);
+  sizerEl.textContent = longest;
+
+  const wordEls = words.map((w) => {
+    const span = document.createElement('span');
+    span.className = 'carousel-word';
+    span.textContent = w;
+    carouselEl.appendChild(span);
+    return span;
+  });
+
+  const letterEls = [];
+  for (const ch of brandText) {
+    const span = document.createElement('span');
+    span.className = 'brand-letter';
+    span.textContent = ch;
+    brandEl.appendChild(span);
+    letterEls.push(span);
+  }
+
+  const cursorEl = document.createElement('span');
+  cursorEl.className = 'cursor-typing';
+  brandEl.appendChild(cursorEl);
+
+  function positionCursor() {
+    let lastRevealed = null;
+    for (let i = letterEls.length - 1; i >= 0; i--) {
+      if (letterEls[i].classList.contains('revealed')) {
+        lastRevealed = letterEls[i];
+        break;
+      }
+    }
+    const brandRect = brandEl.getBoundingClientRect();
+    if (lastRevealed) {
+      const letterRect = lastRevealed.getBoundingClientRect();
+      cursorEl.style.left = (letterRect.right - brandRect.left + 1) + 'px';
+    } else {
+      cursorEl.style.left = '0px';
+    }
+  }
+
+  if (prefersReducedMotion) {
+    letterEls.forEach(el => el.classList.add('revealed'));
+    cursorEl.classList.add('gone');
+    dashEl.classList.add('visible');
+    wordEls[0].classList.add('active');
+    wordEls[0].style.opacity = '1';
+    wordEls[0].style.transform = 'translateY(0)';
+    attrEl.classList.add('visible');
+    return;
+  }
+
+  let letterIndex = 0;
+  const typeSpeed = 160;
+  positionCursor();
+
+  function typeOn() {
+    if (letterIndex < letterEls.length) {
+      letterEls[letterIndex].classList.add('revealed');
+      letterIndex++;
+      positionCursor();
+      setTimeout(typeOn, typeSpeed);
+    } else {
+      cursorEl.classList.add('steady');
+      setTimeout(startSwing, 500);
+    }
+  }
+
+  function drawBar(x1, y1, x2, y2, thickness) {
+    const cx = (x1 + x2) / 2;
+    const cy = (y1 + y2) / 2;
+    const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    swingEl.style.left = (cx - len / 2) + 'px';
+    swingEl.style.top = (cy - thickness / 2) + 'px';
+    swingEl.style.width = len + 'px';
+    swingEl.style.height = thickness + 'px';
+    swingEl.style.transformOrigin = 'center center';
+    swingEl.style.transform = `rotate(${angle}deg)`;
+  }
+
+  function startSwing() {
+    const rect = cursorEl.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    const pivotX = rect.left;
+    const pivotY = rect.bottom;
+
+    cursorEl.classList.add('gone');
+
+    // Measure dash
+    dashEl.style.visibility = 'hidden';
+    dashEl.style.opacity = '1';
+    const dashRect = dashEl.getBoundingClientRect();
+    const dashW = dashRect.width;
+    const dashCX = dashRect.left + dashRect.width / 2;
+    const dashCY = dashRect.top + dashRect.height / 2;
+    dashEl.style.opacity = '0';
+    dashEl.style.visibility = '';
+
+    swingEl.style.display = 'block';
+
+    // Precompute phase 2 end / phase 3 start: cursor at 45° from bottom-left pivot
+    const angle45rad = 45 * Math.PI / 180;
+    const topAtP2End_X = pivotX + Math.sin(angle45rad) * h;
+    const topAtP2End_Y = pivotY - Math.cos(angle45rad) * h;
+
+    // Phase 3: new pivot = top end at 45°
+    // Free end starts at (pivotX, pivotY) — the original bottom-left
+    // Free end angle from new pivot:
+    const freeAngleStart = Math.atan2(pivotY - topAtP2End_Y, pivotX - topAtP2End_X);
+    // Target: free end directly right of new pivot (horizontal em dash)
+    const freeAngleEnd = 0;
+
+    // Total animation as one smooth flow
+    // We define keyframes as proportions of total time
+    // Phase 1: 0.0 → 0.45  (0° → 250° CW)
+    // Phase 2: 0.45 → 0.75 (250° → 45° CCW)
+    // Phase 3: 0.75 → 1.0  (pivot flip, swing to horizontal + stretch)
+    const totalDuration = 2000;
+    const start = performance.now();
+
+    // Single smooth easing for the whole animation
+    function easeInOut(t) {
+      // Smooth sinusoidal ease — constant feeling speed
+      return (1 - Math.cos(t * Math.PI)) / 2;
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    let finished = false;
+
+    function animate(now) {
+      if (finished) return;
+
+      let t = (now - start) / totalDuration;
+      if (t > 1) t = 1;
+
+      if (t <= 0.45) {
+        // Phase 1: CW 0° → 250°
+        const p = t / 0.45;
+        const ep = easeInOut(p);
+        const angle = 250 * ep;
+        const rad = angle * Math.PI / 180;
+        const topX = pivotX + Math.sin(rad) * h;
+        const topY = pivotY - Math.cos(rad) * h;
+        drawBar(pivotX, pivotY, topX, topY, w);
+
+      } else if (t <= 0.75) {
+        // Phase 2: CCW 250° → 45°
+        const p = (t - 0.45) / 0.30;
+        const ep = easeInOut(p);
+        const angle = 250 - (250 - 45) * ep;
+        const rad = angle * Math.PI / 180;
+        const topX = pivotX + Math.sin(rad) * h;
+        const topY = pivotY - Math.cos(rad) * h;
+        drawBar(pivotX, pivotY, topX, topY, w);
+
+      } else {
+        // Phase 3: pivot flip + swing to horizontal + stretch
+        const p = (t - 0.75) / 0.25;
+        const ep = easeOutCubic(p);
+
+        const newPivotX = topAtP2End_X;
+        const newPivotY = topAtP2End_Y;
+
+        // Interpolate free end angle
+        const currentAngle = freeAngleStart + (freeAngleEnd - freeAngleStart) * ep;
+
+        // Stretch from cursor height to dash width
+        const currentLen = h + (dashW - h) * ep;
+
+        const freeX = newPivotX + Math.cos(currentAngle) * currentLen;
+        const freeY = newPivotY + Math.sin(currentAngle) * currentLen;
+
+        drawBar(newPivotX, newPivotY, freeX, freeY, w);
+      }
+
+      if (t >= 1) {
+        finished = true;
+        // Force show the dash and hide the swing bar
+        swingEl.style.display = 'none';
+        dashEl.style.opacity = '1';
+        dashEl.style.visibility = 'visible';
+        dashEl.classList.add('visible');
+        attrEl.classList.add('visible');
+        setTimeout(startCarousel, 300);
+        return;
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  let currentWord = 0;
+
+  function startCarousel() {
+    showWord(0);
+    setInterval(nextWord, 6000);
+  }
+
+  function showWord(index) {
+    const el = wordEls[index];
+    el.style.transition = 'none';
+    el.className = 'carousel-word';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(0.45em)';
+    void el.offsetWidth;
+    el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+    el.classList.add('active');
+  }
+
+  function hideWord(index, cb) {
+    const el = wordEls[index];
+    el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-0.45em)';
+    setTimeout(() => {
+      el.className = 'carousel-word';
+      if (cb) cb();
+    }, 560);
+  }
+
+  function nextWord() {
+    const prev = currentWord;
+    currentWord = (currentWord + 1) % words.length;
+    hideWord(prev, () => showWord(currentWord));
+  }
+
+  setTimeout(typeOn, 900);
+})();
+</script>
+</body>
+</html>
