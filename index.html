@@ -99,6 +99,18 @@
     pointer-events: none;
   }
 
+  .heart {
+    position: fixed;
+    top: clamp(1.5rem, 3vh, 2.5rem);
+    right: clamp(1.5rem, 3vw, 3rem);
+    width: clamp(1.4rem, 2.6vw, 2rem);
+    height: auto;
+    user-select: none;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .heart.visible { opacity: 1; }
+
   .attribution {
     position: fixed;
     bottom: clamp(1.5rem, 3vh, 2.5rem);
@@ -122,6 +134,7 @@
     .carousel-word { transform: none !important; transition: none !important; }
     .carousel-word.active { opacity: 1 !important; }
     .attribution { opacity: 1 !important; transition: none !important; }
+    .heart { opacity: 1 !important; transition: none !important; }
   }
 </style>
 </head>
@@ -134,6 +147,12 @@
 </div>
 
 <div id="cursorSwing"></div>
+<svg class="heart" id="heart" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <filter id="handdrawn"><feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="3" seed="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/></filter>
+  </defs>
+  <path d="M44 100 C38 88, 8 62, 5 42 C2 26, 10 12, 24 10 C34 9, 42 14, 46 24 C48 28, 48 30, 48 30 C50 22, 56 10, 68 6 C80 2, 94 10, 96 28 C98 46, 78 72, 52 96 C50 98, 46 100, 44 100Z" fill="#c0392b" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: url(#handdrawn)"/>
+</svg>
 <div class="attribution" id="attribution">Ross Hindle</div>
 
 <script>
@@ -146,6 +165,7 @@
   const carouselEl = document.getElementById('carousel');
   const sizerEl = document.getElementById('sizer');
   const attrEl = document.getElementById('attribution');
+  const heartEl = document.getElementById('heart');
   const swingEl = document.getElementById('cursorSwing');
 
   const longest = words.reduce((a, b) => a.length > b.length ? a : b);
@@ -197,6 +217,7 @@
     wordEls[0].style.opacity = '1';
     wordEls[0].style.transform = 'translateY(0)';
     attrEl.classList.add('visible');
+    heartEl.classList.add('visible');
     return;
   }
 
@@ -358,7 +379,8 @@
           dashEl.style.visibility = 'visible';
           dashEl.classList.add('visible');
           attrEl.classList.add('visible');
-          setTimeout(startCarousel, 2300);
+          heartEl.classList.add('visible');
+          setTimeout(startCarousel, 1800);
         }
       }
 
@@ -372,7 +394,7 @@
 
   function startCarousel() {
     showWord(0);
-    setInterval(nextWord, 5000);
+    setInterval(nextWord, 4500);
   }
 
   function showWord(index) {
