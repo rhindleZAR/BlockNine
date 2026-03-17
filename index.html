@@ -107,7 +107,7 @@
     height: auto;
     user-select: none;
     opacity: 0;
-    transition: opacity 1.2s ease;
+    transition: opacity 2.5s ease;
   }
   .heart.visible { opacity: 1; }
 
@@ -122,7 +122,7 @@
     letter-spacing: 0.01em;
     user-select: none;
     opacity: 0;
-    transition: opacity 1.2s ease;
+    transition: opacity 2.5s ease;
   }
   .attribution.visible { opacity: 1; }
 
@@ -378,8 +378,6 @@
           dashEl.style.opacity = '1';
           dashEl.style.visibility = 'visible';
           dashEl.classList.add('visible');
-          attrEl.classList.add('visible');
-          heartEl.classList.add('visible');
           setTimeout(startCarousel, 1800);
         }
       }
@@ -394,6 +392,8 @@
 
   function startCarousel() {
     showWord(0);
+    attrEl.classList.add('visible');
+    heartEl.classList.add('visible');
     setInterval(nextWord, 4500);
   }
 
